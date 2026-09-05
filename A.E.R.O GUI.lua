@@ -6,6 +6,7 @@ local RunService = game:GetService("RunService")
 -- Criando a Tela Principal (ScreenGui)
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "AERO_Gui"
+screenGui.ResetOnSpawn = false -- IMPEDE A GUI DE SUMIR AO RENASCER / MUDAR DE RODADA
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
 -- Janela Principal (Frame)
@@ -26,6 +27,13 @@ titleLabel.TextSize = 16
 titleLabel.Font = Enum.Font.SourceSansBold
 titleLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 titleLabel.Parent = frame
+
+--- VARIÁVEIS DE ESTADO (Para manter ativas após a partida) ---
+local currentSpeed = 16
+local currentJumpPower = 50
+local girando = false
+local flying = false
+local espAtivo = false
 
 --- BARRAS DE NAVEGAÇÃO (5 ABAS) ---
 local tabs = {"Velocidade", "Pulo", "Giro", "Fly", "ESP"}
@@ -62,6 +70,66 @@ for name, btn in pairs(tabButtons) do
 	end)
 end
 
+--- FUNÇÕES AUXILIARES DE APLICAR ESTADOS ---
+local function aplicarVelocidade(val)
+	currentSpeed = val
+	if player.Character and player.Character:FindFirstChild("Humanoid") then
+		player.Character.Humanoid.WalkSpeed = val
+	end
+end
+
+local function aplicarPulo(val)
+	currentJumpPower = val
+	if player.Character and player.Character:FindFirstChild("Humanoid") then
+		player.Character.Humanoid.JumpPower = val
+	end
+end
+
+local function aplicarGiro(estado)
+	girando = estado
+	local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+	if hrp then
+		local giroAntigo = hrp:FindFirstChild("GiroRapido")
+		if giroAntigo then giroAntigo:Destroy() end
+		
+		if girando then
+			local giro = Instance.new("BodyAngularVelocity")
+			giro.Name = "GiroRapido"
+			giro.MaxTorque = Vector3.new(0, math.huge, 0)
+			giro.AngularVelocity = Vector3.new(0, 60, 0)
+			giro.Parent = hrp
+		end
+	end
+end
+
+local flyVelocity, flyGyro
+
+local function aplicarFly(estado)
+	flying = estado
+	local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+	
+	if hrp then
+		local oldVel = hrp:FindFirstChild("FlyVelocity")
+		local oldGyro = hrp:FindFirstChild("FlyGyro")
+		if oldVel then oldVel:Destroy() end
+		if oldGyro then oldGyro:Destroy() end
+		
+		if flying then
+			flyVelocity = Instance.new("BodyVelocity")
+			flyVelocity.Name = "FlyVelocity"
+			flyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+			flyVelocity.Velocity = Vector3.new(0, 0, 0)
+			flyVelocity.Parent = hrp
+			
+			flyGyro = Instance.new("BodyGyro")
+			flyGyro.Name = "FlyGyro"
+			flyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+			flyGyro.CFrame = hrp.CFrame
+			flyGyro.Parent = hrp
+		end
+	end
+end
+
 --- 1. ABA VELOCIDADE ---
 local speedFrame = tabFrames["Velocidade"]
 local textBoxSpeed = Instance.new("TextBox")
@@ -90,16 +158,14 @@ for i, vel in ipairs(velocidadesMacro) do
 	macroBtn.Parent = speedFrame
 	
 	macroBtn.MouseButton1Click:Connect(function()
-		if player.Character and player.Character:FindFirstChild("Humanoid") then
-			player.Character.Humanoid.WalkSpeed = vel
-		end
+		aplicarVelocidade(vel)
 	end)
 end
 
 applySpeedBtn.MouseButton1Click:Connect(function()
 	local novaVel = tonumber(textBoxSpeed.Text)
-	if novaVel and player.Character and player.Character:FindFirstChild("Humanoid") then
-		player.Character.Humanoid.WalkSpeed = novaVel
+	if novaVel then
+		aplicarVelocidade(novaVel)
 	end
 end)
 
@@ -131,16 +197,14 @@ for i, puloVal in ipairs(pulosMacro) do
 	macroBtn.Parent = jumpFrame
 	
 	macroBtn.MouseButton1Click:Connect(function()
-		if player.Character and player.Character:FindFirstChild("Humanoid") then
-			player.Character.Humanoid.JumpPower = puloVal
-		end
+		aplicarPulo(puloVal)
 	end)
 end
 
 applyJumpBtn.MouseButton1Click:Connect(function()
 	local novoPulo = tonumber(textBoxJump.Text)
-	if novoPulo and player.Character and player.Character:FindFirstChild("Humanoid") then
-		player.Character.Humanoid.JumpPower = novoPulo
+	if novoPulo then
+		aplicarPulo(novoPulo)
 	end
 end)
 
@@ -154,29 +218,13 @@ spinBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 spinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 spinBtn.Parent = spinFrame
 
-local girando = false
 spinBtn.MouseButton1Click:Connect(function()
-	girando = not girando
-	local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-	if hrp then
-		if girando then
-			spinBtn.Text = "Girar: LIGADO"
-			spinBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-			local giro = Instance.new("BodyAngularVelocity")
-			giro.Name = "GiroRapido"
-			giro.MaxTorque = Vector3.new(0, math.huge, 0)
-			giro.AngularVelocity = Vector3.new(0, 60, 0)
-			giro.Parent = hrp
-		else
-			spinBtn.Text = "Girar: DESLIGADO"
-			spinBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-			local giro = hrp:FindFirstChild("GiroRapido")
-			if giro then giro:Destroy() end
-		end
-	end
+	aplicarGiro(not girando)
+	spinBtn.Text = girando and "Girar: LIGADO" or "Girar: DESLIGADO"
+	spinBtn.BackgroundColor3 = girando and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
 end)
 
---- 4. ABA FLY (VOAR) ---
+--- 4. ABA FLY ---
 local flyFrame = tabFrames["Fly"]
 local flyBtn = Instance.new("TextButton")
 flyBtn.Size = UDim2.new(0, 220, 0, 40)
@@ -186,68 +234,31 @@ flyBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 flyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 flyBtn.Parent = flyFrame
 
-local flying = false
-local flyVelocity, flyGyro
-
 flyBtn.MouseButton1Click:Connect(function()
-	flying = not flying
-	local char = player.Character
-	local hrp = char and char:FindFirstChild("HumanoidRootPart")
-	
-	if hrp then
-		if flying then
-			flyBtn.Text = "Fly: LIGADO"
-			flyBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-			
-			flyVelocity = Instance.new("BodyVelocity")
-			flyVelocity.Name = "FlyVelocity"
-			flyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-			flyVelocity.Velocity = Vector3.new(0, 0, 0)
-			flyVelocity.Parent = hrp
-			
-			flyGyro = Instance.new("BodyGyro")
-			flyGyro.Name = "FlyGyro"
-			flyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-			flyGyro.CFrame = hrp.CFrame
-			flyGyro.Parent = hrp
-		else
-			flyBtn.Text = "Fly: DESLIGADO"
-			flyBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-			
-			if flyVelocity then flyVelocity:Destroy() end
-			if flyGyro then flyGyro:Destroy() end
-		end
-	end
+	aplicarFly(not flying)
+	flyBtn.Text = flying and "Fly: LIGADO" or "Fly: DESLIGADO"
+	flyBtn.BackgroundColor3 = flying and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
 end)
 
 RunService.RenderStepped:Connect(function()
 	if flying and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
 		local hrp = player.Character.HumanoidRootPart
 		local camera = workspace.CurrentCamera
-		flyGyro.CFrame = camera.CFrame
+		if flyGyro and flyGyro.Parent then flyGyro.CFrame = camera.CFrame end
 		
 		local speed = 50
 		local moveDir = Vector3.new()
 		
-		-- Movimento simples guiado pela câmera
-		if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-			moveDir = moveDir + camera.CFrame.LookVector
-		end
-		if UserInputService:IsKeyDown(Enum.KeyCode.S) then
-			moveDir = moveDir - camera.CFrame.LookVector
-		end
-		if UserInputService:IsKeyDown(Enum.KeyCode.A) then
-			moveDir = moveDir - camera.CFrame.RightVector
-		end
-		if UserInputService:IsKeyDown(Enum.KeyCode.D) then
-			moveDir = moveDir + camera.CFrame.RightVector
-		end
+		if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + camera.CFrame.LookVector end
+		if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - camera.CFrame.LookVector end
+		if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - camera.CFrame.RightVector end
+		if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + camera.CFrame.RightVector end
 		
-		flyVelocity.Velocity = moveDir * speed
+		if flyVelocity and flyVelocity.Parent then flyVelocity.Velocity = moveDir * speed end
 	end
 end)
 
---- 5. ABA ESP (VER JOGADORES) ---
+--- 5. ABA ESP ---
 local espFrame = tabFrames["ESP"]
 local espBtn = Instance.new("TextButton")
 espBtn.Size = UDim2.new(0, 220, 0, 40)
@@ -257,12 +268,11 @@ espBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 espBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 espBtn.Parent = espFrame
 
-local espAtivo = false
-
 local function adicionarESP(targetPlayer)
 	if targetPlayer ~= player then
 		targetPlayer.CharacterAdded:Connect(function(char)
 			if espAtivo then
+				task.wait(0.5)
 				local highlight = Instance.new("Highlight")
 				highlight.Name = "AERO_ESP"
 				highlight.FillColor = Color3.fromRGB(255, 0, 0)
@@ -272,7 +282,7 @@ local function adicionarESP(targetPlayer)
 		end)
 		
 		if targetPlayer.Character then
-			local highlight = Instance.new("Highlight")
+			local highlight = targetPlayer.Character:FindFirstChild("AERO_ESP") or Instance.new("Highlight")
 			highlight.Name = "AERO_ESP"
 			highlight.FillColor = Color3.fromRGB(255, 0, 0)
 			highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
@@ -283,19 +293,13 @@ end
 
 espBtn.MouseButton1Click:Connect(function()
 	espAtivo = not espAtivo
+	espBtn.Text = espAtivo and "ESP: LIGADO" or "ESP: DESLIGADO"
+	espBtn.BackgroundColor3 = espAtivo and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
 	
-	if espAtivo then
-		espBtn.Text = "ESP: LIGADO"
-		espBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-		
-		for _, p in ipairs(game.Players:GetPlayers()) do
+	for _, p in ipairs(game.Players:GetPlayers()) do
+		if espAtivo then
 			adicionarESP(p)
-		end
-	else
-		espBtn.Text = "ESP: DESLIGADO"
-		espBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-		
-		for _, p in ipairs(game.Players:GetPlayers()) do
+		else
 			if p.Character then
 				local hl = p.Character:FindFirstChild("AERO_ESP")
 				if hl then hl:Destroy() end
@@ -305,9 +309,19 @@ espBtn.MouseButton1Click:Connect(function()
 end)
 
 game.Players.PlayerAdded:Connect(function(p)
-	if espAtivo then
-		adicionarESP(p)
-	end
+	if espAtivo then adicionarESP(p) end
+end)
+
+--- RENOVAÇÃO AUTOMÁTICA AO RENASCER (RESPAWN) ---
+player.CharacterAdded:Connect(function(char)
+	char:WaitForChild("Humanoid")
+	task.wait(0.2)
+	
+	-- Re-aplica as modificações salvas no novo personagem
+	if currentSpeed ~= 16 then aplicarVelocidade(currentSpeed) end
+	if currentJumpPower ~= 50 then aplicarPulo(currentJumpPower) end
+	if girando then aplicarGiro(true) end
+	if flying then aplicarFly(true) end
 end)
 
 --- SISTEMA DE ARRASTAR (DRAGGABLE) ---
