@@ -11,8 +11,8 @@ screenGui.Parent = player:WaitForChild("PlayerGui")
 
 -- Janela Principal (Frame)
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 260, 0, 230)
-frame.Position = UDim2.new(0.5, -130, 0.3, 0)
+frame.Size = UDim2.new(0, 280, 0, 240)
+frame.Position = UDim2.new(0.5, -140, 0.3, 0)
 frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 frame.BorderSizePixel = 0
 frame.Parent = screenGui
@@ -34,10 +34,13 @@ local currentJumpPower = 50
 local girando = false
 local flying = false
 local espAtivo = false
-local blinkDistance = 25 -- Distância do Blink
+local blinkDistance = 25
+local transparente = false
+local camuflagemAtiva = false
+local seizureAtivo = false
 
---- BARRAS DE NAVEGAÇÃO (6 ABAS) ---
-local tabs = {"Velocidade", "Pulo", "Giro", "Fly", "ESP", "Blink"}
+--- BARRAS DE NAVEGAÇÃO (7 ABAS) ---
+local tabs = {"Velocidade", "Pulo", "Giro", "Fly", "ESP", "Blink", "Diversão"}
 local tabButtons = {}
 local tabFrames = {}
 
@@ -46,7 +49,7 @@ for i, tabName in ipairs(tabs) do
 	btn.Size = UDim2.new(1 / #tabs, 0, 0, 25)
 	btn.Position = UDim2.new((i - 1) * (1 / #tabs), 0, 0, 30)
 	btn.Text = tabName
-	btn.TextSize = 10
+	btn.TextSize = 9
 	btn.BackgroundColor3 = (i == 1) and Color3.fromRGB(50, 50, 50) or Color3.fromRGB(40, 40, 40)
 	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
 	btn.Parent = frame
@@ -135,7 +138,6 @@ local function executarBlink()
 	local char = player.Character
 	local hrp = char and char:FindFirstChild("HumanoidRootPart")
 	if hrp then
-		-- Teleporta para frente na direção em que o jogador está olhando
 		hrp.CFrame = hrp.CFrame + (hrp.CFrame.LookVector * blinkDistance)
 	end
 end
@@ -143,14 +145,14 @@ end
 --- 1. ABA VELOCIDADE ---
 local speedFrame = tabFrames["Velocidade"]
 local textBoxSpeed = Instance.new("TextBox")
-textBoxSpeed.Size = UDim2.new(0, 220, 0, 30)
+textBoxSpeed.Size = UDim2.new(0, 240, 0, 30)
 textBoxSpeed.Position = UDim2.new(0, 20, 0, 10)
 textBoxSpeed.PlaceholderText = "Digite a velocidade..."
 textBoxSpeed.Text = ""
 textBoxSpeed.Parent = speedFrame
 
 local applySpeedBtn = Instance.new("TextButton")
-applySpeedBtn.Size = UDim2.new(0, 220, 0, 30)
+applySpeedBtn.Size = UDim2.new(0, 240, 0, 30)
 applySpeedBtn.Position = UDim2.new(0, 20, 0, 45)
 applySpeedBtn.Text = "Aplicar Velocidade"
 applySpeedBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
@@ -160,8 +162,8 @@ applySpeedBtn.Parent = speedFrame
 local velocidadesMacro = {18, 32, 50}
 for i, vel in ipairs(velocidadesMacro) do
 	local macroBtn = Instance.new("TextButton")
-	macroBtn.Size = UDim2.new(0, 65, 0, 35)
-	macroBtn.Position = UDim2.new(0, 20 + (i - 1) * 77, 0, 90)
+	macroBtn.Size = UDim2.new(0, 70, 0, 35)
+	macroBtn.Position = UDim2.new(0, 20 + (i - 1) * 85, 0, 90)
 	macroBtn.Text = tostring(vel)
 	macroBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 	macroBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -182,14 +184,14 @@ end)
 --- 2. ABA PULO ---
 local jumpFrame = tabFrames["Pulo"]
 local textBoxJump = Instance.new("TextBox")
-textBoxJump.Size = UDim2.new(0, 220, 0, 30)
+textBoxJump.Size = UDim2.new(0, 240, 0, 30)
 textBoxJump.Position = UDim2.new(0, 20, 0, 10)
 textBoxJump.PlaceholderText = "Digite a força do pulo..."
 textBoxJump.Text = ""
 textBoxJump.Parent = jumpFrame
 
 local applyJumpBtn = Instance.new("TextButton")
-applyJumpBtn.Size = UDim2.new(0, 220, 0, 30)
+applyJumpBtn.Size = UDim2.new(0, 240, 0, 30)
 applyJumpBtn.Position = UDim2.new(0, 20, 0, 45)
 applyJumpBtn.Text = "Aplicar Pulo"
 applyJumpBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
@@ -199,8 +201,8 @@ applyJumpBtn.Parent = jumpFrame
 local pulosMacro = {50, 100, 150}
 for i, puloVal in ipairs(pulosMacro) do
 	local macroBtn = Instance.new("TextButton")
-	macroBtn.Size = UDim2.new(0, 65, 0, 35)
-	macroBtn.Position = UDim2.new(0, 20 + (i - 1) * 77, 0, 90)
+	macroBtn.Size = UDim2.new(0, 70, 0, 35)
+	macroBtn.Position = UDim2.new(0, 20 + (i - 1) * 85, 0, 90)
 	macroBtn.Text = tostring(puloVal)
 	macroBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 	macroBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -221,7 +223,7 @@ end)
 --- 3. ABA GIRO ---
 local spinFrame = tabFrames["Giro"]
 local spinBtn = Instance.new("TextButton")
-spinBtn.Size = UDim2.new(0, 220, 0, 40)
+spinBtn.Size = UDim2.new(0, 240, 0, 40)
 spinBtn.Position = UDim2.new(0, 20, 0, 40)
 spinBtn.Text = "Girar: DESLIGADO"
 spinBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
@@ -237,7 +239,7 @@ end)
 --- 4. ABA FLY ---
 local flyFrame = tabFrames["Fly"]
 local flyBtn = Instance.new("TextButton")
-flyBtn.Size = UDim2.new(0, 220, 0, 40)
+flyBtn.Size = UDim2.new(0, 240, 0, 40)
 flyBtn.Position = UDim2.new(0, 20, 0, 40)
 flyBtn.Text = "Fly: DESLIGADO"
 flyBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
@@ -271,7 +273,7 @@ end)
 --- 5. ABA ESP ---
 local espFrame = tabFrames["ESP"]
 local espBtn = Instance.new("TextButton")
-espBtn.Size = UDim2.new(0, 220, 0, 40)
+espBtn.Size = UDim2.new(0, 240, 0, 40)
 espBtn.Position = UDim2.new(0, 20, 0, 40)
 espBtn.Text = "ESP: DESLIGADO"
 espBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
@@ -297,6 +299,200 @@ local function adicionarESP(targetPlayer)
 			highlight.FillColor = Color3.fromRGB(255, 0, 0)
 			highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
 			highlight.Parent = targetPlayer.Character
+		end
+	end
+end
+
+espBtn.MouseButton1Click:Connect(function()
+	espAtivo = not espAtivo
+	espBtn.Text = espAtivo and "ESP: LIGADO" or "ESP: DESLIGADO"
+	espBtn.BackgroundColor3 = espAtivo and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
+	
+	for _, p in ipairs(game.Players:GetPlayers()) do
+		if espAtivo then
+			adicionarESP(p)
+		else
+			if p.Character then
+				local hl = p.Character:FindFirstChild("AERO_ESP")
+				if hl then hl:Destroy() end
+			end
+		end
+	end
+end)
+
+game.Players.PlayerAdded:Connect(function(p)
+	if espAtivo then adicionarESP(p) end
+end)
+
+--- 6. ABA BLINK ---
+local blinkFrame = tabFrames["Blink"]
+
+local blinkBtn = Instance.new("TextButton")
+blinkBtn.Size = UDim2.new(0, 240, 0, 35)
+blinkBtn.Position = UDim2.new(0, 20, 0, 10)
+blinkBtn.Text = "Blink (Teleport)"
+blinkBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 255)
+blinkBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+blinkBtn.Parent = blinkFrame
+
+local textBoxBlink = Instance.new("TextBox")
+textBoxBlink.Size = UDim2.new(0, 240, 0, 30)
+textBoxBlink.Position = UDim2.new(0, 20, 0, 55)
+textBoxBlink.PlaceholderText = "Distância do Blink (Padrão: 25)..."
+textBoxBlink.Text = ""
+textBoxBlink.Parent = blinkFrame
+
+local applyBlinkBtn = Instance.new("TextButton")
+applyBlinkBtn.Size = UDim2.new(0, 240, 0, 30)
+applyBlinkBtn.Position = UDim2.new(0, 20, 0, 95)
+applyBlinkBtn.Text = "Definir Distância"
+applyBlinkBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+applyBlinkBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+applyBlinkBtn.Parent = applyBlinkBtn.Parent
+
+blinkBtn.MouseButton1Click:Connect(function()
+	executarBlink()
+end)
+
+applyBlinkBtn.MouseButton1Click:Connect(function()
+	local dist = tonumber(textBoxBlink.Text)
+	if dist then
+		blinkDistance = dist
+	end
+end)
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if not gameProcessed and input.KeyCode == Enum.KeyCode.E then
+		executarBlink()
+	end
+end)
+
+--- 7. ABA DIVERSÃO (TRANSPARENTE, CAMUFLAGEM E SEIZURE) ---
+local funFrame = tabFrames["Diversão"]
+
+-- Botão Transparente
+local invisibleBtn = Instance.new("TextButton")
+invisibleBtn.Size = UDim2.new(0, 240, 0, 30)
+invisibleBtn.Position = UDim2.new(0, 20, 0, 10)
+invisibleBtn.Text = "Transparente: DESLIGADO"
+invisibleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+invisibleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+invisibleBtn.Parent = funFrame
+
+invisibleBtn.MouseButton1Click:Connect(function()
+	transparente = not transparente
+	invisibleBtn.Text = transparente and "Transparente: LIGADO" or "Transparente: DESLIGADO"
+	invisibleBtn.BackgroundColor3 = transparente and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
+	
+	if player.Character then
+		for _, part in ipairs(player.Character:GetDescendants()) do
+			if part:IsA("BasePart") or part:IsA("Decal") then
+				part.Transparency = transparente and 0.6 or 0
+			end
+		end
+	end
+end)
+
+-- Botão Camuflagem
+local camoBtn = Instance.new("TextButton")
+camoBtn.Size = UDim2.new(0, 240, 0, 30)
+camoBtn.Position = UDim2.new(0, 20, 0, 50)
+camoBtn.Text = "Camuflagem: DESLIGADO"
+camoBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+camoBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+camoBtn.Parent = funFrame
+
+camoBtn.MouseButton1Click:Connect(function()
+	camuflagemAtiva = not camuflagemAtiva
+	camoBtn.Text = camuflagemAtiva and "Camuflagem: LIGADO" or "Camuflagem: DESLIGADO"
+	camoBtn.BackgroundColor3 = camuflagemAtiva and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
+	
+	if player.Character then
+		for _, part in ipairs(player.Character:GetDescendants()) do
+			if part:IsA("BasePart") then
+				if camuflagemAtiva then
+					part.Material = Enum.Material.Grass
+					part.Color = Color3.fromRGB(34, 139, 34)
+				else
+					part.Material = Enum.Material.Plastic
+				end
+			end
+		end
+	end
+end)
+
+-- Botão Seizure
+local seizureBtn = Instance.new("TextButton")
+seizureBtn.Size = UDim2.new(0, 240, 0, 30)
+seizureBtn.Position = UDim2.new(0, 20, 0, 90)
+seizureBtn.Text = "Seizure: DESLIGADO"
+seizureBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+seizureBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+seizureBtn.Parent = funFrame
+
+seizureBtn.MouseButton1Click:Connect(function()
+	seizureAtivo = not seizureAtivo
+	seizureBtn.Text = seizureAtivo and "Seizure: LIGADO" or "Seizure: DESLIGADO"
+	seizureBtn.BackgroundColor3 = seizureAtivo and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
+end)
+
+-- Loop do Seizure
+RunService.RenderStepped:Connect(function()
+	if seizureAtivo and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+		local hrp = player.Character.HumanoidRootPart
+		hrp.CFrame = hrp.CFrame * CFrame.Angles(
+			math.rad(math.random(-180, 180)),
+			math.rad(math.random(-180, 180)),
+			math.rad(math.random(-180, 180))
+		)
+	end
+end)
+
+--- RENOVAÇÃO AUTOMÁTICA AO RENASCER (RESPAWN) ---
+player.CharacterAdded:Connect(function(char)
+	char:WaitForChild("Humanoid")
+	task.wait(0.2)
+	
+	if currentSpeed ~= 16 then aplicarVelocidade(currentSpeed) end
+	if currentJumpPower ~= 50 then aplicarPulo(currentJumpPower) end
+	if girando then aplicarGiro(true) end
+	if flying then aplicarFly(true) end
+end)
+
+--- SISTEMA DE ARRASTAR (DRAGGABLE) ---
+local dragging, dragInput, dragStart, startPos
+
+local function update(input)
+	local delta = input.Position - dragStart
+	frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = frame.Position
+		
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+frame.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		update(input)
+	end
+end)
+light.Parent = targetPlayer.Character
 		end
 	end
 end
