@@ -1,6 +1,7 @@
 -- Serviços e Jogador
 local player = game.Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
 -- Criando a Tela Principal (ScreenGui)
 local screenGui = Instance.new("ScreenGui")
@@ -9,8 +10,8 @@ screenGui.Parent = player:WaitForChild("PlayerGui")
 
 -- Janela Principal (Frame)
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 240, 0, 220)
-frame.Position = UDim2.new(0.5, -120, 0.3, 0)
+frame.Size = UDim2.new(0, 260, 0, 230)
+frame.Position = UDim2.new(0.5, -130, 0.3, 0)
 frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 frame.BorderSizePixel = 0
 frame.Parent = screenGui
@@ -26,47 +27,52 @@ titleLabel.Font = Enum.Font.SourceSansBold
 titleLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 titleLabel.Parent = frame
 
---- BARRAS DE NAVEGAÇÃO (ABAS) ---
-local tabSpeedBtn = Instance.new("TextButton")
-tabSpeedBtn.Size = UDim2.new(0.333, 0, 0, 25)
-tabSpeedBtn.Position = UDim2.new(0, 0, 0, 30)
-tabSpeedBtn.Text = "Velocidade"
-tabSpeedBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-tabSpeedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-tabSpeedBtn.Parent = frame
+--- BARRAS DE NAVEGAÇÃO (5 ABAS) ---
+local tabs = {"Velocidade", "Pulo", "Giro", "Fly", "ESP"}
+local tabButtons = {}
+local tabFrames = {}
 
-local tabJumpBtn = Instance.new("TextButton")
-tabJumpBtn.Size = UDim2.new(0.333, 0, 0, 25)
-tabJumpBtn.Position = UDim2.new(0.333, 0, 0, 30)
-tabJumpBtn.Text = "Pulo"
-tabJumpBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-tabJumpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-tabJumpBtn.Parent = frame
+for i, tabName in ipairs(tabs) do
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(0.2, 0, 0, 25)
+	btn.Position = UDim2.new((i - 1) * 0.2, 0, 0, 30)
+	btn.Text = tabName
+	btn.TextSize = 11
+	btn.BackgroundColor3 = (i == 1) and Color3.fromRGB(50, 50, 50) or Color3.fromRGB(40, 40, 40)
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.Parent = frame
+	tabButtons[tabName] = btn
+	
+	local contentFrame = Instance.new("Frame")
+	contentFrame.Size = UDim2.new(1, 0, 1, -55)
+	contentFrame.Position = UDim2.new(0, 0, 0, 55)
+	contentFrame.BackgroundTransparency = 1
+	contentFrame.Visible = (i == 1)
+	contentFrame.Parent = frame
+	tabFrames[tabName] = contentFrame
+end
 
-local tabSpinBtn = Instance.new("TextButton")
-tabSpinBtn.Size = UDim2.new(0.334, 0, 0, 25)
-tabSpinBtn.Position = UDim2.new(0.666, 0, 0, 30)
-tabSpinBtn.Text = "Giro"
-tabSpinBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-tabSpinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-tabSpinBtn.Parent = frame
+-- Função para trocar de abas
+for name, btn in pairs(tabButtons) do
+	btn.MouseButton1Click:Connect(function()
+		for tName, fFrame in pairs(tabFrames) do
+			fFrame.Visible = (tName == name)
+			tabButtons[tName].BackgroundColor3 = (tName == name) and Color3.fromRGB(50, 50, 50) or Color3.fromRGB(40, 40, 40)
+		end
+	end)
+end
 
---- CONTEÚDO DA ABA VELOCIDADE ---
-local speedFrame = Instance.new("Frame")
-speedFrame.Size = UDim2.new(1, 0, 1, -55)
-speedFrame.Position = UDim2.new(0, 0, 0, 55)
-speedFrame.BackgroundTransparency = 1
-speedFrame.Parent = frame
-
+--- 1. ABA VELOCIDADE ---
+local speedFrame = tabFrames["Velocidade"]
 local textBoxSpeed = Instance.new("TextBox")
-textBoxSpeed.Size = UDim2.new(0, 200, 0, 30)
+textBoxSpeed.Size = UDim2.new(0, 220, 0, 30)
 textBoxSpeed.Position = UDim2.new(0, 20, 0, 10)
 textBoxSpeed.PlaceholderText = "Digite a velocidade..."
 textBoxSpeed.Text = ""
 textBoxSpeed.Parent = speedFrame
 
 local applySpeedBtn = Instance.new("TextButton")
-applySpeedBtn.Size = UDim2.new(0, 200, 0, 30)
+applySpeedBtn.Size = UDim2.new(0, 220, 0, 30)
 applySpeedBtn.Position = UDim2.new(0, 20, 0, 45)
 applySpeedBtn.Text = "Aplicar Velocidade"
 applySpeedBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
@@ -76,8 +82,8 @@ applySpeedBtn.Parent = speedFrame
 local velocidadesMacro = {18, 32, 50}
 for i, vel in ipairs(velocidadesMacro) do
 	local macroBtn = Instance.new("TextButton")
-	macroBtn.Size = UDim2.new(0, 60, 0, 35)
-	macroBtn.Position = UDim2.new(0, 20 + (i - 1) * 70, 0, 90)
+	macroBtn.Size = UDim2.new(0, 65, 0, 35)
+	macroBtn.Position = UDim2.new(0, 20 + (i - 1) * 77, 0, 90)
 	macroBtn.Text = tostring(vel)
 	macroBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 	macroBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -91,29 +97,23 @@ for i, vel in ipairs(velocidadesMacro) do
 end
 
 applySpeedBtn.MouseButton1Click:Connect(function()
-	local novaVelocidade = tonumber(textBoxSpeed.Text)
-	if novaVelocidade and player.Character and player.Character:FindFirstChild("Humanoid") then
-		player.Character.Humanoid.WalkSpeed = novaVelocidade
+	local novaVel = tonumber(textBoxSpeed.Text)
+	if novaVel and player.Character and player.Character:FindFirstChild("Humanoid") then
+		player.Character.Humanoid.WalkSpeed = novaVel
 	end
 end)
 
---- CONTEÚDO DA ABA PULO ---
-local jumpFrame = Instance.new("Frame")
-jumpFrame.Size = UDim2.new(1, 0, 1, -55)
-jumpFrame.Position = UDim2.new(0, 0, 0, 55)
-jumpFrame.BackgroundTransparency = 1
-jumpFrame.Visible = false
-jumpFrame.Parent = frame
-
+--- 2. ABA PULO ---
+local jumpFrame = tabFrames["Pulo"]
 local textBoxJump = Instance.new("TextBox")
-textBoxJump.Size = UDim2.new(0, 200, 0, 30)
+textBoxJump.Size = UDim2.new(0, 220, 0, 30)
 textBoxJump.Position = UDim2.new(0, 20, 0, 10)
 textBoxJump.PlaceholderText = "Digite a força do pulo..."
 textBoxJump.Text = ""
 textBoxJump.Parent = jumpFrame
 
 local applyJumpBtn = Instance.new("TextButton")
-applyJumpBtn.Size = UDim2.new(0, 200, 0, 30)
+applyJumpBtn.Size = UDim2.new(0, 220, 0, 30)
 applyJumpBtn.Position = UDim2.new(0, 20, 0, 45)
 applyJumpBtn.Text = "Aplicar Pulo"
 applyJumpBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
@@ -123,8 +123,8 @@ applyJumpBtn.Parent = jumpFrame
 local pulosMacro = {50, 100, 150}
 for i, puloVal in ipairs(pulosMacro) do
 	local macroBtn = Instance.new("TextButton")
-	macroBtn.Size = UDim2.new(0, 60, 0, 35)
-	macroBtn.Position = UDim2.new(0, 20 + (i - 1) * 70, 0, 90)
+	macroBtn.Size = UDim2.new(0, 65, 0, 35)
+	macroBtn.Position = UDim2.new(0, 20 + (i - 1) * 77, 0, 90)
 	macroBtn.Text = tostring(puloVal)
 	macroBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 	macroBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -144,16 +144,10 @@ applyJumpBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
---- CONTEÚDO DA ABA GIRO ---
-local spinFrame = Instance.new("Frame")
-spinFrame.Size = UDim2.new(1, 0, 1, -55)
-spinFrame.Position = UDim2.new(0, 0, 0, 55)
-spinFrame.BackgroundTransparency = 1
-spinFrame.Visible = false
-spinFrame.Parent = frame
-
+--- 3. ABA GIRO ---
+local spinFrame = tabFrames["Giro"]
 local spinBtn = Instance.new("TextButton")
-spinBtn.Size = UDim2.new(0, 200, 0, 40)
+spinBtn.Size = UDim2.new(0, 220, 0, 40)
 spinBtn.Position = UDim2.new(0, 20, 0, 40)
 spinBtn.Text = "Girar: DESLIGADO"
 spinBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
@@ -164,12 +158,10 @@ local girando = false
 spinBtn.MouseButton1Click:Connect(function()
 	girando = not girando
 	local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-	
 	if hrp then
 		if girando then
 			spinBtn.Text = "Girar: LIGADO"
 			spinBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-			
 			local giro = Instance.new("BodyAngularVelocity")
 			giro.Name = "GiroRapido"
 			giro.MaxTorque = Vector3.new(0, math.huge, 0)
@@ -178,41 +170,144 @@ spinBtn.MouseButton1Click:Connect(function()
 		else
 			spinBtn.Text = "Girar: DESLIGADO"
 			spinBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-			
 			local giro = hrp:FindFirstChild("GiroRapido")
-			if giro then
-				giro:Destroy()
+			if giro then giro:Destroy() end
+		end
+	end
+end)
+
+--- 4. ABA FLY (VOAR) ---
+local flyFrame = tabFrames["Fly"]
+local flyBtn = Instance.new("TextButton")
+flyBtn.Size = UDim2.new(0, 220, 0, 40)
+flyBtn.Position = UDim2.new(0, 20, 0, 40)
+flyBtn.Text = "Fly: DESLIGADO"
+flyBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+flyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+flyBtn.Parent = flyFrame
+
+local flying = false
+local flyVelocity, flyGyro
+
+flyBtn.MouseButton1Click:Connect(function()
+	flying = not flying
+	local char = player.Character
+	local hrp = char and char:FindFirstChild("HumanoidRootPart")
+	
+	if hrp then
+		if flying then
+			flyBtn.Text = "Fly: LIGADO"
+			flyBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+			
+			flyVelocity = Instance.new("BodyVelocity")
+			flyVelocity.Name = "FlyVelocity"
+			flyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+			flyVelocity.Velocity = Vector3.new(0, 0, 0)
+			flyVelocity.Parent = hrp
+			
+			flyGyro = Instance.new("BodyGyro")
+			flyGyro.Name = "FlyGyro"
+			flyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+			flyGyro.CFrame = hrp.CFrame
+			flyGyro.Parent = hrp
+		else
+			flyBtn.Text = "Fly: DESLIGADO"
+			flyBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+			
+			if flyVelocity then flyVelocity:Destroy() end
+			if flyGyro then flyGyro:Destroy() end
+		end
+	end
+end)
+
+RunService.RenderStepped:Connect(function()
+	if flying and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+		local hrp = player.Character.HumanoidRootPart
+		local camera = workspace.CurrentCamera
+		flyGyro.CFrame = camera.CFrame
+		
+		local speed = 50
+		local moveDir = Vector3.new()
+		
+		-- Movimento simples guiado pela câmera
+		if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+			moveDir = moveDir + camera.CFrame.LookVector
+		end
+		if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+			moveDir = moveDir - camera.CFrame.LookVector
+		end
+		if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+			moveDir = moveDir - camera.CFrame.RightVector
+		end
+		if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+			moveDir = moveDir + camera.CFrame.RightVector
+		end
+		
+		flyVelocity.Velocity = moveDir * speed
+	end
+end)
+
+--- 5. ABA ESP (VER JOGADORES) ---
+local espFrame = tabFrames["ESP"]
+local espBtn = Instance.new("TextButton")
+espBtn.Size = UDim2.new(0, 220, 0, 40)
+espBtn.Position = UDim2.new(0, 20, 0, 40)
+espBtn.Text = "ESP: DESLIGADO"
+espBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+espBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+espBtn.Parent = espFrame
+
+local espAtivo = false
+
+local function adicionarESP(targetPlayer)
+	if targetPlayer ~= player then
+		targetPlayer.CharacterAdded:Connect(function(char)
+			if espAtivo then
+				local highlight = Instance.new("Highlight")
+				highlight.Name = "AERO_ESP"
+				highlight.FillColor = Color3.fromRGB(255, 0, 0)
+				highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+				highlight.Parent = char
+			end
+		end)
+		
+		if targetPlayer.Character then
+			local highlight = Instance.new("Highlight")
+			highlight.Name = "AERO_ESP"
+			highlight.FillColor = Color3.fromRGB(255, 0, 0)
+			highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+			highlight.Parent = targetPlayer.Character
+		end
+	end
+end
+
+espBtn.MouseButton1Click:Connect(function()
+	espAtivo = not espAtivo
+	
+	if espAtivo then
+		espBtn.Text = "ESP: LIGADO"
+		espBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+		
+		for _, p in ipairs(game.Players:GetPlayers()) do
+			adicionarESP(p)
+		end
+	else
+		espBtn.Text = "ESP: DESLIGADO"
+		espBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+		
+		for _, p in ipairs(game.Players:GetPlayers()) do
+			if p.Character then
+				local hl = p.Character:FindFirstChild("AERO_ESP")
+				if hl then hl:Destroy() end
 			end
 		end
 	end
 end)
 
---- TROCA DE ABAS ---
-tabSpeedBtn.MouseButton1Click:Connect(function()
-	speedFrame.Visible = true
-	jumpFrame.Visible = false
-	spinFrame.Visible = false
-	tabSpeedBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-	tabJumpBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-	tabSpinBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-end)
-
-tabJumpBtn.MouseButton1Click:Connect(function()
-	speedFrame.Visible = false
-	jumpFrame.Visible = true
-	spinFrame.Visible = false
-	tabSpeedBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-	tabJumpBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-	tabSpinBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-end)
-
-tabSpinBtn.MouseButton1Click:Connect(function()
-	speedFrame.Visible = false
-	jumpFrame.Visible = false
-	spinFrame.Visible = true
-	tabSpeedBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-	tabJumpBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-	tabSpinBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+game.Players.PlayerAdded:Connect(function(p)
+	if espAtivo then
+		adicionarESP(p)
+	end
 end)
 
 --- SISTEMA DE ARRASTAR (DRAGGABLE) ---
