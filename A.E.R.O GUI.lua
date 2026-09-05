@@ -28,16 +28,24 @@ titleLabel.Parent = frame
 
 --- BARRAS DE NAVEGAÇÃO (ABAS) ---
 local tabSpeedBtn = Instance.new("TextButton")
-tabSpeedBtn.Size = UDim2.new(0.5, 0, 0, 25)
+tabSpeedBtn.Size = UDim2.new(0.333, 0, 0, 25)
 tabSpeedBtn.Position = UDim2.new(0, 0, 0, 30)
 tabSpeedBtn.Text = "Velocidade"
 tabSpeedBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 tabSpeedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 tabSpeedBtn.Parent = frame
 
+local tabJumpBtn = Instance.new("TextButton")
+tabJumpBtn.Size = UDim2.new(0.333, 0, 0, 25)
+tabJumpBtn.Position = UDim2.new(0.333, 0, 0, 30)
+tabJumpBtn.Text = "Pulo"
+tabJumpBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+tabJumpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+tabJumpBtn.Parent = frame
+
 local tabSpinBtn = Instance.new("TextButton")
-tabSpinBtn.Size = UDim2.new(0.5, 0, 0, 25)
-tabSpinBtn.Position = UDim2.new(0.5, 0, 0, 30)
+tabSpinBtn.Size = UDim2.new(0.334, 0, 0, 25)
+tabSpinBtn.Position = UDim2.new(0.666, 0, 0, 30)
 tabSpinBtn.Text = "Giro"
 tabSpinBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 tabSpinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -50,22 +58,21 @@ speedFrame.Position = UDim2.new(0, 0, 0, 55)
 speedFrame.BackgroundTransparency = 1
 speedFrame.Parent = frame
 
-local textBox = Instance.new("TextBox")
-textBox.Size = UDim2.new(0, 200, 0, 30)
-textBox.Position = UDim2.new(0, 20, 0, 10)
-textBox.PlaceholderText = "Digite a velocidade..."
-textBox.Text = ""
-textBox.Parent = speedFrame
+local textBoxSpeed = Instance.new("TextBox")
+textBoxSpeed.Size = UDim2.new(0, 200, 0, 30)
+textBoxSpeed.Position = UDim2.new(0, 20, 0, 10)
+textBoxSpeed.PlaceholderText = "Digite a velocidade..."
+textBoxSpeed.Text = ""
+textBoxSpeed.Parent = speedFrame
 
 local applySpeedBtn = Instance.new("TextButton")
 applySpeedBtn.Size = UDim2.new(0, 200, 0, 30)
 applySpeedBtn.Position = UDim2.new(0, 20, 0, 45)
-applySpeedBtn.Text = "Aplicar Texto"
+applySpeedBtn.Text = "Aplicar Velocidade"
 applySpeedBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
 applySpeedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 applySpeedBtn.Parent = speedFrame
 
--- Macros de Velocidade
 local velocidadesMacro = {18, 32, 50}
 for i, vel in ipairs(velocidadesMacro) do
 	local macroBtn = Instance.new("TextButton")
@@ -84,9 +91,56 @@ for i, vel in ipairs(velocidadesMacro) do
 end
 
 applySpeedBtn.MouseButton1Click:Connect(function()
-	local novaVelocidade = tonumber(textBox.Text)
+	local novaVelocidade = tonumber(textBoxSpeed.Text)
 	if novaVelocidade and player.Character and player.Character:FindFirstChild("Humanoid") then
 		player.Character.Humanoid.WalkSpeed = novaVelocidade
+	end
+end)
+
+--- CONTEÚDO DA ABA PULO ---
+local jumpFrame = Instance.new("Frame")
+jumpFrame.Size = UDim2.new(1, 0, 1, -55)
+jumpFrame.Position = UDim2.new(0, 0, 0, 55)
+jumpFrame.BackgroundTransparency = 1
+jumpFrame.Visible = false
+jumpFrame.Parent = frame
+
+local textBoxJump = Instance.new("TextBox")
+textBoxJump.Size = UDim2.new(0, 200, 0, 30)
+textBoxJump.Position = UDim2.new(0, 20, 0, 10)
+textBoxJump.PlaceholderText = "Digite a força do pulo..."
+textBoxJump.Text = ""
+textBoxJump.Parent = jumpFrame
+
+local applyJumpBtn = Instance.new("TextButton")
+applyJumpBtn.Size = UDim2.new(0, 200, 0, 30)
+applyJumpBtn.Position = UDim2.new(0, 20, 0, 45)
+applyJumpBtn.Text = "Aplicar Pulo"
+applyJumpBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+applyJumpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+applyJumpBtn.Parent = jumpFrame
+
+local pulosMacro = {50, 100, 150}
+for i, puloVal in ipairs(pulosMacro) do
+	local macroBtn = Instance.new("TextButton")
+	macroBtn.Size = UDim2.new(0, 60, 0, 35)
+	macroBtn.Position = UDim2.new(0, 20 + (i - 1) * 70, 0, 90)
+	macroBtn.Text = tostring(puloVal)
+	macroBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+	macroBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	macroBtn.Parent = jumpFrame
+	
+	macroBtn.MouseButton1Click:Connect(function()
+		if player.Character and player.Character:FindFirstChild("Humanoid") then
+			player.Character.Humanoid.JumpPower = puloVal
+		end
+	end)
+end
+
+applyJumpBtn.MouseButton1Click:Connect(function()
+	local novoPulo = tonumber(textBoxJump.Text)
+	if novoPulo and player.Character and player.Character:FindFirstChild("Humanoid") then
+		player.Character.Humanoid.JumpPower = novoPulo
 	end
 end)
 
@@ -136,15 +190,28 @@ end)
 --- TROCA DE ABAS ---
 tabSpeedBtn.MouseButton1Click:Connect(function()
 	speedFrame.Visible = true
+	jumpFrame.Visible = false
 	spinFrame.Visible = false
 	tabSpeedBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	tabJumpBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	tabSpinBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+end)
+
+tabJumpBtn.MouseButton1Click:Connect(function()
+	speedFrame.Visible = false
+	jumpFrame.Visible = true
+	spinFrame.Visible = false
+	tabSpeedBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	tabJumpBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 	tabSpinBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 end)
 
 tabSpinBtn.MouseButton1Click:Connect(function()
 	speedFrame.Visible = false
+	jumpFrame.Visible = false
 	spinFrame.Visible = true
 	tabSpeedBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	tabJumpBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 	tabSpinBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 end)
 
